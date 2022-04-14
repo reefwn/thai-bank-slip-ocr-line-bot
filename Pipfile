@@ -11,6 +11,7 @@ uvicorn = {extras = ["standard"], version = "*"}
 line-bot-sdk = "*"
 numpy = "*"
 tensorflow-cpu = "*"
+Pillow = "*"
 
 [requires]
 python_version = "3.9"
