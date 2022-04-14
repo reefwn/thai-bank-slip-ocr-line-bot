@@ -67,16 +67,18 @@ def message_text(event):
     messages.append('bank = {}'.format(classification_labels[np.argmax(pred_prob)]))
     messages.append('probability = {}'.format(np.max(pred_prob)))
 
-    raw_output = {}
+    raw = {}
     for c in range(len(classification_labels)):
-        raw_output[classification_labels[c]] = pred_prob[0][c]
-    messages.append('raw = {}'.format(raw_output))
+        raw[classification_labels[c]] = pred_prob[0][c]
+    messages.append('raw = {}'.format(raw))
 
     for i in range(len(messages)):
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=messages[i])
-        )
+        msg = TextSendMessage(text=messages[i])
+        if i == 0:
+            line_bot_api.reply_message(event.reply_token, msg)
+        else:
+            line_bot_api.push_message(event.source.user_id, msg)
+
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=5000, reload=True)
