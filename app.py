@@ -17,8 +17,8 @@ line_bot_api = LineBotApi(os.getenv('LINE_CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.getenv('LINE_CHANNEL_SECRET'))
 s3_public = os.getenv('AWS_S3_PUBLIC_PATH')
 
-classification_model = tf.keras.models.load_model('{}/{}'.format(s3_public, 'bank_classification_model.h5'))
-classification_labels = pickle.loads(open('{}/{}'.format(s3_public, 'bank_classification_labels.pickle'), 'rb').read())
+classification_model = tf.keras.models.load_model('./models/bank_classification_model.h5')
+classification_labels = pickle.loads(open('./models/bank_classification_labels.pickle', 'rb').read())
 
 
 @app.get('/')
