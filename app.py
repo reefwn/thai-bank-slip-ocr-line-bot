@@ -73,7 +73,7 @@ def message_text(event):
         # load image for ocr
         img = cv2.imread("./image.png")
         ocr_locations = get_ocr_locations(bank_class)
-        messages = ""
+        messages = []
 
         for i in range(len(ocr_locations)):
             (x, y, w, h) = ocr_locations[i].bbox
@@ -82,7 +82,7 @@ def message_text(event):
             roi = img[y:y+h, x:x+w]
             text = pytesseract.image_to_string(roi, lang="tha+eng")
 
-            messages += "{} = {}\n".format(str(ocr_locations[i].id), text.strip())
+            messages.append("{}: {}".format(str(ocr_locations[i].id), text.strip()))
 
         for i in range(len(messages)):
             msg = TextSendMessage(text=messages[i])
