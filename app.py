@@ -65,7 +65,11 @@ def message_text(event):
     pred = classification_model.predict(img[None, :, :])
     pred_prob = tf.nn.softmax(pred).numpy()
 
-    bank_class = classification_labels[np.argmax(pred_prob)] if np.max(pred_prob) > 0.21 else "OTHER"
+    max_prob = np.argmax(pred_prob)
+    bank_class = classification_labels[max_prob] if max_prob > 0.21 else "OTHER"
+
+    print("bank_class: {}, max_prob: {}".format(bank_class, max_prob))
+
     if bank_class == "OTHER":
         msg = TextSendMessage(text="กรุณาอัพโหลดรูปสลิป")
         line_bot_api.reply_message(event.reply_token, msg)
@@ -77,7 +81,6 @@ def message_text(event):
 
         for i in range(len(ocr_locations)):
             (x, y, w, h) = ocr_locations[i].bbox
-            print("bbox", ocr_locations[i].bbox)
 
             roi = img[y:y+h, x:x+w]
             text = pytesseract.image_to_string(roi, lang="tha+eng")
