@@ -86,6 +86,7 @@ def message_text(event):
         ori_img = cv2.imread(IMG_FILE_NAME)
         img_size = get_img_size(bank_class)
         print("img size: {}".format(img_size))
+
         img = cv2.resize(ori_img, img_size)
 
         # get locations for ocr
