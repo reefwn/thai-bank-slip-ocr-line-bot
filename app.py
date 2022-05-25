@@ -77,7 +77,7 @@ def message_text(event):
         for i in range(len(ocr_locations)):
             (x, y, w, h) = ocr_locations[i].bbox
 
-            roi = img[y:y+h, x:x+w]
+            roi = Image.open(img[y:y+h, x:x+w])
             text = pytesseract.image_to_string(roi, lang="tha+eng")
 
             messages += "{} = {}\n".format(str(ocr_locations[i].id), text.strip())
