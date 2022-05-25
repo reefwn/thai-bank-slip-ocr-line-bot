@@ -6,7 +6,7 @@ import pytesseract
 import numpy as np
 import tensorflow as tf
 
-from fn import get_ocr_locations
+from fn import get_ocr_locations, load_img_size
 from PIL import Image
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -18,9 +18,12 @@ app = FastAPI()
 
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
+threshold = float(os.getenv("CLASSIFICATION_THRESHOLD"))
 
 classification_model = tf.keras.models.load_model("./models/bank_classification_model.h5")
 classification_labels = pickle.loads(open("./models/bank_classification_labels.pickle", "rb").read())
+
+IMG_FILE_NAME = "./image.png"
 
 
 @app.get("/")
@@ -53,7 +56,7 @@ def message_text(event):
 
     # save image to file
     message_content = line_bot_api.get_message_content(event.message.id)
-    with open("./image.png", "wb") as fd:
+    with open(IMG_FILE_NAME, "wb") as fd:
         for chunk in message_content.iter_content():
             fd.write(chunk)
 
@@ -65,10 +68,10 @@ def message_text(event):
     pred = classification_model.predict(img[None, :, :])
     pred_prob = tf.nn.softmax(pred).numpy()
 
+    # find bank class name and probability
     max_idx = np.argmax(pred_prob)
     max_prob = np.max(pred_prob)
-    bank_class = classification_labels[max_idx] if max_prob > 0.21 else "OTHER"
-
+    bank_class = classification_labels[max_idx] if max_prob > threshold else "OTHER"
     print("bank_class: {}, max_prob: {}".format(bank_class, max_prob))
 
     if bank_class == "OTHER":
@@ -76,10 +79,14 @@ def message_text(event):
         line_bot_api.reply_message(event.reply_token, msg)
     else:
         # load image for ocr
-        img = cv2.imread("./image.png")
+        ori_img = cv2.imread(IMG_FILE_NAME)
+        img_size = load_img_size(bank_class)
+        img = cv2.resize(ori_img, img_size)
         ocr_locations = get_ocr_locations(bank_class)
+
         messages = []
 
+        # ocr on each box
         for i in range(len(ocr_locations)):
             (x, y, w, h) = ocr_locations[i].bbox
 
