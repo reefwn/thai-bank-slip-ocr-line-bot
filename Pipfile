@@ -13,6 +13,7 @@ numpy = "*"
 tensorflow-cpu = "*"
 Pillow = "*"
 pytesseract = "*"
+opencv-python = "*"
 
 [requires]
 python_version = "3.9"

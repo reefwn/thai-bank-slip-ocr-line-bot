@@ -1,4 +1,5 @@
 import os
+import cv2
 import pickle
 import uvicorn
 import pytesseract
@@ -70,14 +71,15 @@ def message_text(event):
         line_bot_api.reply_message(event.reply_token, msg)
     else:
         # load image for ocr
-        img = Image.open("./image.png")
+        img = cv2.imread("./image.png")
         ocr_locations = get_ocr_locations(bank_class)
         messages = ""
 
         for i in range(len(ocr_locations)):
             (x, y, w, h) = ocr_locations[i].bbox
+            print("bbox", ocr_locations[i].bbox)
 
-            roi = Image.open(img[y:y+h, x:x+w])
+            roi = img[y:y+h, x:x+w]
             text = pytesseract.image_to_string(roi, lang="tha+eng")
 
             messages += "{} = {}\n".format(str(ocr_locations[i].id), text.strip())
