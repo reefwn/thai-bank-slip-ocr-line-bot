@@ -1,17 +1,18 @@
 from collections import namedtuple
 
-def load_img_size(bank):
+def get_img_size(bank):
     sizes = {
-        "BAY": (2268, 1080),
-        "BBL": (2589, 1080),
-        "GOV": (2037, 1080),
-        "KBANK": (1276, 996),
-        "KTB": (1258, 996),
-        "SCB": (2540, 1080),
-        "TMB": (3100, 1500)
+        "BAY": tuple(2268, 1080),
+        "BBL": tuple(2589, 1080),
+        "GOV": tuple(2037, 1080),
+        "KBANK": tuple(1276, 996),
+        "KTB": tuple(1258, 996),
+        "SCB": tuple(2540, 1080),
+        "TMB": tuple(3100, 1500)
     }
 
     return sizes[bank]
+
 
 def get_ocr_locations(bank):
     OCRLocation = namedtuple('OCRLocation', ['id', 'bbox'])

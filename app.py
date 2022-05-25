@@ -6,9 +6,9 @@ import pytesseract
 import numpy as np
 import tensorflow as tf
 
-from fn import get_ocr_locations, load_img_size
 from PIL import Image
 from linebot import LineBotApi, WebhookHandler
+from fn import get_img_size, get_ocr_locations
 from linebot.exceptions import InvalidSignatureError
 from fastapi import FastAPI, Request, Header, HTTPException
 from linebot.models import MessageEvent, TextMessage, ImageMessage, TextSendMessage
@@ -61,7 +61,7 @@ def message_text(event):
             fd.write(chunk)
 
     # load image for classification
-    img = Image.open("./image.png").resize((180, 180))
+    img = Image.open(IMG_FILE_NAME).resize((180, 180))
     img = np.array(img)
 
     # predict bank
@@ -80,8 +80,11 @@ def message_text(event):
     else:
         # load image for ocr
         ori_img = cv2.imread(IMG_FILE_NAME)
-        img_size = load_img_size(bank_class)
+        img_size = get_img_size(bank_class)
+        print("img size: {}".foramt(img_size))
         img = cv2.resize(ori_img, img_size)
+
+        # get locations for ocr
         ocr_locations = get_ocr_locations(bank_class)
 
         messages = []
