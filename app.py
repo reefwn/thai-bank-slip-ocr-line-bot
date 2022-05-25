@@ -83,11 +83,11 @@ def message_text(event):
         line_bot_api.reply_message(event.reply_token, msg)
     else:
         # load image for ocr
-        ori_img = cv2.imread(IMG_FILE_NAME)
-        img_size = get_img_size(bank_class)
-        print("img size: {}".format(img_size))
+        img = cv2.imread(IMG_FILE_NAME)
 
-        img = cv2.resize(ori_img, img_size)
+        # img_size = get_img_size(bank_class)
+        # print("img size: {}".format(img_size))
+        # img = cv2.resize(ori_img, img_size)
 
         # get locations for ocr
         ocr_locations = get_ocr_locations(bank_class)
