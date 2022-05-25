@@ -12,6 +12,7 @@ line-bot-sdk = "*"
 numpy = "*"
 tensorflow-cpu = "*"
 Pillow = "*"
+pytesseract = "*"
 
 [requires]
 python_version = "3.9"
