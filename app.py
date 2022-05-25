@@ -1,4 +1,5 @@
 import os
+import cv2
 import pickle
 import uvicorn
 import pytesseract
@@ -56,7 +57,7 @@ def message_text(event):
         for chunk in message_content.iter_content():
             fd.write(chunk)
 
-    # load image
+    # load image for classification
     img = Image.open("./image.png").resize((180, 180))
     img = np.array(img)
 
@@ -69,6 +70,8 @@ def message_text(event):
         msg = TextSendMessage(text="กรุณาอัพโหลดรูปสลิป")
         line_bot_api.reply_message(event.reply_token, msg)
     else:
+        # load image for ocr
+        img = Image.open("./image.png")
         ocr_locations = get_ocr_locations(bank_class)
         messages = ""
 
