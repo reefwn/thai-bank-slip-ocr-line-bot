@@ -1,6 +1,7 @@
 import os
 import pickle
 import uvicorn
+import pytesseract
 import numpy as np
 import tensorflow as tf
 
