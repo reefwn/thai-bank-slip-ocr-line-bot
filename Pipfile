@@ -13,7 +13,7 @@ numpy = "*"
 tensorflow-cpu = "*"
 Pillow = "*"
 pytesseract = "*"
-opencv-python-headless = "==4.2.0.32"
+opencv-python-headless = "*"
 
 [requires]
 python_version = "3.9"
