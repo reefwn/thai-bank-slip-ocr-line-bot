@@ -66,7 +66,7 @@ def message_text(event):
     pred_prob = tf.nn.softmax(pred).numpy()
 
     max_idx = np.argmax(pred_prob)
-    max_prob = pred_prob[max_idx]
+    max_prob = np.max(pred_prob)
     bank_class = classification_labels[max_idx] if max_prob > 0.21 else "OTHER"
 
     print("bank_class: {}, max_prob: {}".format(bank_class, max_prob))
