@@ -16,6 +16,7 @@ from linebot.models import MessageEvent, TextMessage, ImageMessage, TextSendMess
 
 app = FastAPI()
 
+line_id = os.getenv("LINE_BOT_BASIC_ID")
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 threshold = float(os.getenv("CLASSIFICATION_THRESHOLD"))
@@ -28,7 +29,7 @@ IMG_FILE_NAME = "./image.png"
 
 @app.get("/")
 def index():
-    return {"line": os.getenv("LINE_BOT_BASIC_ID")}
+    return {"line": line_id}
 
 
 @app.post("/webhook")
@@ -71,8 +72,11 @@ def message_text(event):
     # find bank class name and probability
     max_idx = np.argmax(pred_prob)
     max_prob = np.max(pred_prob)
+    
     bank_class = classification_labels[max_idx] if max_prob > threshold else "OTHER"
-    print("bank_class: {}, max_prob: {}".format(bank_class, max_prob))
+    messages = []
+    
+    messages.append("bank: {}, prob: {}".format(bank_class, max_prob))
 
     if bank_class == "OTHER":
         msg = TextSendMessage(text="กรุณาอัพโหลดรูปสลิป")
@@ -87,16 +91,17 @@ def message_text(event):
         # get locations for ocr
         ocr_locations = get_ocr_locations(bank_class)
 
-        messages = []
-
         # ocr on each box
-        for i in range(len(ocr_locations)):
-            (x, y, w, h) = ocr_locations[i].bbox
+        try:
+            for i in range(len(ocr_locations)):
+                (x, y, w, h) = ocr_locations[i].bbox
 
-            roi = img[y:y+h, x:x+w]
-            text = pytesseract.image_to_string(roi, lang="tha+eng")
+                roi = img[y:y+h, x:x+w]
+                text = pytesseract.image_to_string(roi, lang="tha+eng")
 
-            messages.append("{}: {}".format(str(ocr_locations[i].id), text.strip()))
+                messages.append("{}: {}".format(str(ocr_locations[i].id), text.strip()))
+        except:
+            print("something went wrong on ocr")
 
         for i in range(len(messages)):
             msg = TextSendMessage(text=messages[i])
