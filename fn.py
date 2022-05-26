@@ -116,7 +116,7 @@ def gov_ocr(rois):
     time = ""
     from_ = ""
     to = ""
-    amount = 0
+    amount = ""
 
     for i in range(len(rois)):
         # ref
@@ -158,7 +158,7 @@ def gov_ocr(rois):
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             txt_int = re.findall(r'[0-9]+', txt)
             if len(txt_int) > 0:
-                amount = float(txt.replace(",", "")) if int(amount) == 0 else amount
+                amount = txt if amount == "" else amount
 
     return [ref, date, time, from_, to, amount]
 
@@ -169,7 +169,7 @@ def scb_ocr(rois):
     time = ""
     from_ = ""
     to = ""
-    amount = 0
+    amount = ""
 
     for i in range(len(rois)):
     # ref
@@ -210,6 +210,6 @@ def scb_ocr(rois):
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             txt_int = re.findall(r'[0-9]+', txt)
             if len(txt_int) > 0:
-                amount = float(txt.replace(",", "")) if int(amount) == 0 else amount
+                amount = txt if amount == "" else amount
 
     return [ref, date, time, from_, to, amount]
