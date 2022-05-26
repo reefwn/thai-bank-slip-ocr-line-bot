@@ -75,19 +75,21 @@ def message_text(event):
     
     bank_class = classification_labels[max_idx] if max_prob > threshold else "OTHER"
     messages = []
-    
-    messages.append("bank: {}, prob: {}".format(bank_class, max_prob))
+
+    messages.append("bank: {}".format(bank_class))
+    messages.append("prob: {}".format(bank_class, max_prob))
+    messages.append("-" * 10)
 
     if bank_class == "OTHER":
         msg = TextSendMessage(text="กรุณาอัพโหลดรูปสลิป")
         line_bot_api.reply_message(event.reply_token, msg)
     else:
         # load image for ocr
-        img = cv2.imread(IMG_FILE_NAME)
+        img_size = get_img_size(bank_class)
+        ori_img = cv2.imread(IMG_FILE_NAME)
+        img = cv2.resize(ori_img, img_size)
 
-        # img_size = get_img_size(bank_class)
-        # print("img size: {}".format(img_size))
-        # img = cv2.resize(ori_img, img_size)
+        print("img shape: {}".format(img.shape))
 
         # get locations for ocr
         ocr_locations = get_ocr_locations(bank_class)

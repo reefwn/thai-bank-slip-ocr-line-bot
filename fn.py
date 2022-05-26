@@ -2,13 +2,13 @@ from collections import namedtuple
 
 def get_img_size(bank):
     sizes = {
-        "BAY": (2268, 1080),
-        "BBL": (2589, 1080),
-        "GOV": (2037, 1080),
-        "KBANK": (1402, 984),
-        "KTB": (1258, 996),
-        "SCB": (2540, 1080),
-        "TMB": (3100, 1500)
+        "BAY": (1080, 2268),
+        "BBL": (1080, 2589),
+        "GOV": (1080, 2037),
+        "KBANK": (984, 1402),
+        "KTB": (996, 1258),
+        "SCB": (1080, 2540),
+        "TMB": (1500, 3100)
     }
 
     return sizes[bank]
