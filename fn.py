@@ -121,9 +121,9 @@ def gov_ocr(rois):
             txt = pytesseract.image_to_string(rois[i], lang="eng")
             if any(c in SPECIAL_CHARACTERS for c in txt):
                 refs = txt.split(" ")
-            for r in refs:
-                if not any(c in SPECIAL_CHARACTERS for c in r):
-                    ref = r.strip()
+                for r in refs:
+                    if not any(c in SPECIAL_CHARACTERS for c in r):
+                        ref = r.strip()
             else:
                 ref = txt.strip()
         # date time
