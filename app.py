@@ -104,12 +104,9 @@ def message_text(event):
         except:
             print("something went wrong on ocr")
 
-        for i in range(len(messages)):
-            msg = TextSendMessage(text=messages[i])
-            if i == 0:
-                line_bot_api.reply_message(event.reply_token, msg)
-            else:
-                line_bot_api.push_message(event.source.user_id, msg)
+        combine_msgs = messages.join("\n")
+        msg = TextSendMessage(text=combine_msgs)
+        line_bot_api.reply_message(event.reply_token, msg)
 
 
 if __name__ == "__main__":
