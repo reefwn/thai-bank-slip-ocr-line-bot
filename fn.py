@@ -4,7 +4,7 @@ import re
 from collections import namedtuple
 from pytesseract import Output
 
-SPECIAL_CHARACTERS = "!#$%^&*()-+?_=,<>/|"
+SPECIAL_CHARACTERS = "!#$%^&*()-?_=,<>/|"
 THA="tha"
 ENG="eng"
 THA_ENG="tha+eng"
@@ -206,15 +206,16 @@ def scb_ocr(rois):
         if i == 20 or i == 22 or i == 25:
             if to == "":
                 txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-                if len(txt.split(" ")) > 2:
-                    names = txt.split(" ")
-                    if "@" in names:
-                        at_idx = names.index("@")
-                        to = " ".join(names[at_idx+1:]).strip()
+                if not any(c in SPECIAL_CHARACTERS for c in txt):
+                    if len(txt.split(" ")) > 2:
+                        names = txt.split(" ")
+                        if "@" in names:
+                            at_idx = names.index("@")
+                            to = " ".join(names[at_idx+1:]).strip()
+                        else:
+                            to = " ".join(names[-2:]).strip()
                     else:
-                        to = " ".join(names[-2:]).strip()
-                else:
-                    to = txt.strip()
+                        to = txt.strip()
         # amount
         if i == len(rois) - 5:
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
