@@ -104,7 +104,7 @@ def message_text(event):
         except:
             print("something went wrong on ocr")
 
-        combine_msgs = messages.join("\n")
+        combine_msgs = "\n".join(messages)
         msg = TextSendMessage(text=combine_msgs)
         line_bot_api.reply_message(event.reply_token, msg)
 
