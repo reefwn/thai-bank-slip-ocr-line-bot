@@ -4,7 +4,7 @@ import re
 from collections import namedtuple
 from pytesseract import Output
 
-SPECIAL_CHARACTERS = "!@#$%^&*()-+?_=,<>/"
+SPECIAL_CHARACTERS = "!#$%^&*()-+?_=,<>/|"
 THA="tha"
 ENG="eng"
 THA_ENG="tha+eng"
@@ -173,16 +173,19 @@ def scb_ocr(rois):
 
     for i in range(len(rois)):
     # ref
-        if i == 12 or i == 13:
+        if i == 10 or i == 12 or i == 13:
             if ref == "":
-                txt = pytesseract.image_to_string(rois[i], lang=ENG)
+                txt = pytesseract.image_to_string(rois[i], lang="eng")
                 if any(c in SPECIAL_CHARACTERS for c in txt):
                     refs = txt.split(" ")
                     for r in refs:
                         if not any(c in SPECIAL_CHARACTERS for c in r):
                             ref = r.strip().replace(" ", "")
-                    else:
-                        ref = txt.strip().replace(" ", "")
+                elif ":" in txt:
+                    idx = txt.index(":")
+                    ref = "".join(txt[idx+1:]).strip()
+                else:
+                    ref = txt.strip().replace(" ", "")
         # date time
         if i == 4:
             text = pytesseract.image_to_string(rois[i], lang=THA_ENG)
@@ -190,15 +193,17 @@ def scb_ocr(rois):
             date = datetime[0].strip()
             time = datetime[1].strip()
         # from
-        if i == 15:
-            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-            t = txt.split(" ")
-            if (len(t) >= 2):
-                from_ = " ".join(t[-2:]).strip()
-            else:
-                from_ = t[0].strip()
+        if i == 13 or i == 14 or i == 15:
+            if from_ == "":
+                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
+                if not any(c in SPECIAL_CHARACTERS for c in txt):
+                    t = txt.split(" ")
+                    if (len(t) >= 2):
+                        from_ = " ".join(t[-2:]).strip()
+                    else:
+                        from_ = t[0].strip()
         # to
-        if i == 22 or i == 25:
+        if i == 20 or i == 22 or i == 25:
             if to == "":
                 txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if len(txt.split(" ")) > 2:
