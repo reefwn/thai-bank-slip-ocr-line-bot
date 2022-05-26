@@ -5,6 +5,9 @@ from collections import namedtuple
 from pytesseract import Output
 
 SPECIAL_CHARACTERS = "!@#$%^&*()-+?_=,<>/"
+THA="tha"
+ENG="eng"
+THA_ENG="tha+eng"
 
 
 def get_img_size(bank):
@@ -118,7 +121,7 @@ def gov_ocr(rois):
     for i in range(len(rois)):
         # ref
         if i == 6:
-            txt = pytesseract.image_to_string(rois[i], lang="eng")
+            txt = pytesseract.image_to_string(rois[i], lang=ENG)
             if any(c in SPECIAL_CHARACTERS for c in txt):
                 refs = txt.split(" ")
                 for r in refs:
@@ -128,25 +131,85 @@ def gov_ocr(rois):
                 ref = txt.strip()
         # date time
         if i == 7:
-            text = pytesseract.image_to_string(rois[i], lang="tha+eng")
+            text = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             datetime = text.split(" ")
             date = " ".join(datetime[:3]).strip()
             time = " ".join(datetime[3:]).strip()
         # from
         if i == 14:
-            txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             t = txt.split("\n")
-            from_ = t[0]
+            if len(t[0].split(" ")) > 2:
+                names = t[0].split(" ")
+                from_ = " ".join(names[-2:])
+            else:
+                from_ = t[0].strip()
         # to
         if i == 22 or i == 24:
-            txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             if to == "" and not any(c in SPECIAL_CHARACTERS for c in text):
-                to = txt.strip()
+                if len(txt.split(" ")) > 2:
+                    names = txt.split(" ")
+                    to = " ".join(names[-2:])
+                else:
+                    from_ = txt.strip()
         # amount
         if i == len(rois) - 2 or i == len(rois) - 1:
-            txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
-            txt_int = re.findall(r"[0-9]+", txt)
+            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
+            txt_int = re.findall(r'[0-9]+', txt)
             if len(txt_int) > 0:
-                amount = int(txt_int[0]) if int(amount) == 0 else amount
+                amount = float(txt.replace(",", "")) if int(amount) == 0 else amount
+
+    return [ref, date, time, from_, to, amount]
+
+
+def scb_ocr(rois):
+    ref = ""
+    date = ""
+    time = ""
+    from_ = ""
+    to = ""
+    amount = 0
+
+    for i in range(len(rois)):
+    # ref
+        if i == 13:
+            txt = pytesseract.image_to_string(rois[i], lang=ENG)
+            if any(c in SPECIAL_CHARACTERS for c in txt):
+                refs = txt.split(" ")
+                for r in refs:
+                    if not any(c in SPECIAL_CHARACTERS for c in r):
+                        ref = r.strip().replace(" ", "")
+                else:
+                    ref = txt.strip().replace(" ", "")
+        # date time
+        if i == 4:
+            text = pytesseract.image_to_string(rois[i], lang=THA_ENG)
+            datetime = text.split("-")
+            date = datetime[0].strip()
+            time = datetime[1].strip()
+        # from
+        if i == 15:
+            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
+            t = txt.split(" ")
+            if (len(t) >= 2):
+                from_ = " ".join(t[-2:]).strip()
+            else:
+                from_ = t[0].strip()
+        # to
+        if i == 22 or i == 25:
+            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
+            if to == "":
+                if len(txt.split(" ")) > 2:
+                    names = txt.split(" ")
+                    to = " ".join(names[-2:]).strip()
+                else:
+                    from_ = txt.strip()
+        # amount
+        if i == len(rois) - 5:
+            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
+            txt_int = re.findall(r'[0-9]+', txt)
+            if len(txt_int) > 0:
+                amount = float(txt.replace(",", "")) if int(amount) == 0 else amount
 
     return [ref, date, time, from_, to, amount]
