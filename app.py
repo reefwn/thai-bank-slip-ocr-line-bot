@@ -8,7 +8,7 @@ import tensorflow as tf
 
 from PIL import Image
 from linebot import LineBotApi, WebhookHandler
-from fn import get_img_size, get_ocr_locations
+from fn import get_img_size, get_ocr_locations, get_rois, gov_ocr
 from linebot.exceptions import InvalidSignatureError
 from fastapi import FastAPI, Request, Header, HTTPException
 from linebot.models import MessageEvent, TextMessage, ImageMessage, TextSendMessage
@@ -63,10 +63,10 @@ def message_text(event):
 
     # load image for classification
     img = Image.open(IMG_FILE_NAME).resize((180, 180))
-    img = np.array(img)
+    img_arr = np.array(img)
 
     # predict bank
-    pred = classification_model.predict(img[None, :, :])
+    pred = classification_model.predict(img_arr[None, :, :])
     pred_prob = tf.nn.softmax(pred).numpy()
 
     # find bank class name and probability
@@ -88,29 +88,34 @@ def message_text(event):
         img_size = get_img_size(bank_class)
         img = cv2.imread(IMG_FILE_NAME)
         [width, height, _] = img.shape
+        
+        if bank_class == "GOV":
+            rois = get_rois(img)
+            rdtfta = ["ref", "date", "time", "from", "to", "amount"]
+            ocr = gov_ocr(rois)
+            for i in range(len(rdtfta)):
+                messages.append("{}: {}".format(rdtfta[i], ocr[i]))
+        else:
+            # get locations for ocr
+            ocr_locations = get_ocr_locations(bank_class)
 
-        print("img shape: {}".format(img.shape))
+            # ocr on each box
+            try:
+                for i in range(len(ocr_locations)):
+                    (x, y, w, h) = ocr_locations[i].bbox
 
-        # get locations for ocr
-        ocr_locations = get_ocr_locations(bank_class)
+                    if bank_class == "GOV":
+                        x = int(width * x)
+                        y = int(height * y)
 
-        # ocr on each box
-        try:
-            for i in range(len(ocr_locations)):
-                (x, y, w, h) = ocr_locations[i].bbox
+                    roi = img[y:y+h, x:x+w]
 
-                if bank_class == "GOV":
-                    x = int(width * x)
-                    y = int(height * y)
+                    lang = "eng" if i == len(ocr_locations) - 1 else "tha+eng"
+                    text = pytesseract.image_to_string(roi, lang=lang)
 
-                roi = img[y:y+h, x:x+w]
-
-                lang = "eng" if i == len(ocr_locations) - 1 else "tha+eng"
-                text = pytesseract.image_to_string(roi, lang=lang)
-
-                messages.append("{}: {}".format(str(ocr_locations[i].id), text.strip()))
-        except:
-            print("something went wrong on ocr")
+                    messages.append("{}: {}".format(str(ocr_locations[i].id), text.strip()))
+            except:
+                print("something went wrong on ocr")
 
         combine_msgs = "\n".join(messages)
         msg = TextSendMessage(text=combine_msgs)
