@@ -147,12 +147,12 @@ def gov_ocr(rois):
         # to
         if i == 22 or i == 24:
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-            if to == "" and not any(c in SPECIAL_CHARACTERS for c in text):
+            if to == "" and not any(c in SPECIAL_CHARACTERS for c in txt):
                 if len(txt.split(" ")) > 2:
                     names = txt.split(" ")
                     to = " ".join(names[-2:])
                 else:
-                    from_ = txt.strip()
+                    to = txt.strip()
         # amount
         if i == len(rois) - 2 or i == len(rois) - 1:
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
@@ -173,15 +173,16 @@ def scb_ocr(rois):
 
     for i in range(len(rois)):
     # ref
-        if i == 13:
-            txt = pytesseract.image_to_string(rois[i], lang=ENG)
-            if any(c in SPECIAL_CHARACTERS for c in txt):
-                refs = txt.split(" ")
-                for r in refs:
-                    if not any(c in SPECIAL_CHARACTERS for c in r):
-                        ref = r.strip().replace(" ", "")
-                else:
-                    ref = txt.strip().replace(" ", "")
+        if i == 12 or i == 13:
+            if ref == "":
+                txt = pytesseract.image_to_string(rois[i], lang=ENG)
+                if any(c in SPECIAL_CHARACTERS for c in txt):
+                    refs = txt.split(" ")
+                    for r in refs:
+                        if not any(c in SPECIAL_CHARACTERS for c in r):
+                            ref = r.strip().replace(" ", "")
+                    else:
+                        ref = txt.strip().replace(" ", "")
         # date time
         if i == 4:
             text = pytesseract.image_to_string(rois[i], lang=THA_ENG)
@@ -198,13 +199,17 @@ def scb_ocr(rois):
                 from_ = t[0].strip()
         # to
         if i == 22 or i == 25:
-            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             if to == "":
+                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if len(txt.split(" ")) > 2:
                     names = txt.split(" ")
-                    to = " ".join(names[-2:]).strip()
+                    if "@" in names:
+                        at_idx = names.index("@")
+                        to = " ".join(names[at_idx+1:]).strip()
+                    else:
+                        to = " ".join(names[-2:]).strip()
                 else:
-                    from_ = txt.strip()
+                    to = txt.strip()
         # amount
         if i == len(rois) - 5:
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
