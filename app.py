@@ -77,7 +77,7 @@ def message_text(event):
     messages = []
 
     messages.append("bank: {}".format(bank_class))
-    messages.append("prob: {}".format(bank_class, max_prob))
+    messages.append("prob: {}".format(max_prob))
     messages.append("-" * 10)
 
     if bank_class == "OTHER":
@@ -86,8 +86,8 @@ def message_text(event):
     else:
         # load image for ocr
         img_size = get_img_size(bank_class)
-        ori_img = cv2.imread(IMG_FILE_NAME)
-        img = cv2.resize(ori_img, img_size)
+        img = cv2.imread(IMG_FILE_NAME)
+        [width, height, _] = img.shape
 
         print("img shape: {}".format(img.shape))
 
@@ -99,8 +99,14 @@ def message_text(event):
             for i in range(len(ocr_locations)):
                 (x, y, w, h) = ocr_locations[i].bbox
 
+                if bank_class == "GOV":
+                    x = int(width * x)
+                    y = int(height * y)
+
                 roi = img[y:y+h, x:x+w]
-                text = pytesseract.image_to_string(roi, lang="tha+eng")
+
+                lang = "eng" if i == len(ocr_locations) - 1 else "tha+eng"
+                text = pytesseract.image_to_string(roi, lang=lang)
 
                 messages.append("{}: {}".format(str(ocr_locations[i].id), text.strip()))
         except:
