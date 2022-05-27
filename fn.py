@@ -140,7 +140,8 @@ def get_rois(img, p, pw, ph):
     return rois
 
 
-def append_orc_msg(msg, ocr):
+def append_orc_msg(ocr):
+    msg = []
     for i in range(len(RDTFTA)):
         msg.append("{}: {}".format(RDTFTA[i], ocr[i]))
     return msg

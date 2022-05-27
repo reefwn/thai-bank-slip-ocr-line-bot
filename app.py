@@ -90,37 +90,37 @@ def message_text(event):
         if bank_class == "SCB":
             rois = get_rois(thr_img, 12, 0.1, 0.04)
             ocr = scb_ocr(rois)
-            messages = append_orc_msg(messages, ocr)
+            messages += append_orc_msg(ocr)
 
         elif bank_class == "GOV":
             rois = get_rois(thr_img, 10, 0.06, 0.04)
             ocr = gov_ocr(rois)
-            messages = append_orc_msg(messages, ocr)
+            messages += append_orc_msg(ocr)
 
         elif bank_class == "TMB":
             rois = get_rois(thr_img, 12, 0.1, 0.05)
             ocr = tmb_ocr(rois)
-            messages = append_orc_msg(messages, ocr)
+            messages += append_orc_msg(ocr)
 
         elif bank_class == "KTB":
             rois = get_rois(thr_img, 15, 0.2, 0.05)
             ocr = ktb_ocr(rois)
-            messages = append_orc_msg(messages, ocr)
+            messages += append_orc_msg(ocr)
 
         elif bank_class == "BBL":
             rois = get_rois(thr_img, 13, 0.2, 0.04)
             ocr = bbl_ocr(rois)
-            messages = append_orc_msg(messages, ocr)
+            messages += append_orc_msg(ocr)
 
         elif bank_class == "BAY":
             rois = get_rois(thr_img, 13, 0.2, 0.1)
             ocr = bay_ocr(rois)
-            messages = append_orc_msg(messages, ocr)
+            messages += append_orc_msg(ocr)
 
         elif bank_class == "KBANK":
             rois = get_rois(thr_img, 13, 0.2, 0.1)
             ocr = kbank_ocr(rois)
-            messages = append_orc_msg(messages, ocr)
+            messages += append_orc_msg(ocr)
 
         # else:
         #     # get locations for ocr
