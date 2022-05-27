@@ -21,3 +21,15 @@ def is_num(string):
         return True
     except:
         return False
+
+
+def remove_duplicate_preserve_order(l):
+  res = []
+  for x in l:
+    if x not in res:
+      res.append(x)
+  return res
+
+
+def has_empty_space(string):
+  return len(string.split()) > 0

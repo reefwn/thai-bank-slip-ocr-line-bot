@@ -1,15 +1,17 @@
+import cv2
 import pytesseract
 
-from collections import namedtuple
 from pytesseract import Output
-
-from utils import has_int, has_special_char, is_num
+from collections import namedtuple
+from utils import has_empty_space, has_int, has_special_char, is_num, remove_duplicate_preserve_order
 
 THA="tha"
 ENG="eng"
 THA_ENG="tha+eng"
+RDTFTA = ["ref", "date", "time", "from", "to", "amount"]
 
 
+# TODO: remove this function
 def get_img_size(bank):
     sizes = {
         "BAY": (1080, 2268),
@@ -24,6 +26,7 @@ def get_img_size(bank):
     return sizes[bank]
 
 
+# TODO: remove this function
 def get_ocr_locations(bank):
     OCRLocation = namedtuple("OCRLocation", ["id", "bbox"])
     locations = {
@@ -88,24 +91,59 @@ def get_ocr_locations(bank):
     return locations[bank]
 
 
-def get_rois(img, p):
+def convert_grayscale(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    return cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+
+
+def get_rois(img, p, pw, ph):
     d = pytesseract.image_to_data(img, output_type=Output.DICT)
     n_boxes = len(d["level"])
 
-    duplicates = []
-    count = 0
-    rois = []
+    [img_h, img_w] = img.shape
+    min_w = int(img_w * pw)
+    max_h = int(img_h * ph)
 
+    # find lines of text
+    boxes = []
+    lines = []
     for i in range(n_boxes):
         (x, y, w, h) = (d["left"][i], d["top"][i], d["width"][i], d["height"][i])
+        if x != 0 and y != 0 and h != img.shape[0] and w > min_w and h < max_h:
+            boxes.append((x, y, w, h))
+            lines.append(y+h)
 
-        if x != 0 and y != 0 and w != img.shape[0] and h != img.shape[1] and "{}{}".format(w, h) not in duplicates:
-            duplicates.append("{}{}".format(w, h))
-            count += 1
-            roi = img[y-p:y+h+p, x-p:x+w+p]
-            rois.append(roi)
+    unique_lines = remove_duplicate_preserve_order(lines)
+    long_lines = []
 
+    # find longest area of each line
+    for l in unique_lines:
+        longest = 0
+        longest_coor = (0, 0, 0, 0)
+        for box in boxes:
+            (x, y, w, h) = box
+            if abs(y + h - l) < 5:
+                long = x+w
+                if long > longest:
+                    longest = long
+                    longest_coor = box
+        long_lines.append(longest_coor)
+
+    # find region of interest
+    rois = []
+    for i in range(len(long_lines)):
+        (x, y, w, h) = long_lines[i]
+
+        roi = img[y-p:y+h+p, x-p:x+w+p]
+        rois.append(roi)
+    
     return rois
+
+
+def append_orc_msg(msg, ocr):
+    for i in range(len(RDTFTA)):
+        msg.append("{}: {}".format(RDTFTA[i], ocr[i]))
+    return msg
 
 
 def gov_ocr(rois):
@@ -170,8 +208,8 @@ def scb_ocr(rois):
     amount = ""
 
     for i in range(len(rois)):
-    # ref
-        if i in [10, 12, 13]:
+        # ref
+        if i in [3]:
             if ref == "":
                 txt = pytesseract.image_to_string(rois[i], lang=ENG)
                 if has_special_char(txt):
@@ -185,13 +223,13 @@ def scb_ocr(rois):
                 else:
                     ref = txt.strip().replace(" ", "")
         # date time
-        if i == 4:
+        if i == 2:
             text = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             datetime = text.split("-")
             date = datetime[0].strip()
             time = datetime[1].strip()
         # from
-        if i in [13, 14, 15]:
+        if i in [4, 5]:
             if from_ == "":
                 txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if not has_special_char(txt) and not has_int(txt):
@@ -201,24 +239,25 @@ def scb_ocr(rois):
                     else:
                         from_ = t[0].strip()
         # to
-        if i in [20, 22, 25, 26]:
-            if to == "":
-                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-                if not has_special_char(txt):
-                    if len(txt.split(" ")) > 2:
-                        names = txt.split(" ")
-                        if "@" in names:
-                            at_idx = names.index("@")
-                            to = " ".join(names[at_idx+1:]).strip()
-                        else:
-                            to = " ".join(names[-2:]).strip()
-                    else:
-                        to = txt.strip()
-        # amount
-        if i == len(rois) - 5:
+        if i in [7, 8]:
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-            isnum = is_num(txt)
-            if isnum:
-                amount = txt if amount == "" else amount
+            if not has_special_char(txt) and not has_int(txt):
+                if len(txt.split(" ")) > 2:
+                    names = txt.split(" ")
+                    if "@" in names:
+                        at_idx = names.index("@")
+                        to = " ".join(names[at_idx+1:]).strip()
+                    else:
+                        to = " ".join(names[-2:]).strip()
+                else:
+                    to = txt.strip()
+        # amount
+        if i == len(rois) - 4 or i == len(rois) - 7:
+            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
+            if has_empty_space(txt):
+                txt = txt.split()[-1]
+                isnum = is_num(txt)
+                if isnum:
+                    amount = txt
 
     return [ref, date, time, from_, to, amount]

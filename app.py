@@ -10,7 +10,7 @@ from PIL import Image
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from fastapi import FastAPI, Request, Header, HTTPException
-from fn import get_img_size, get_ocr_locations, get_rois, gov_ocr, scb_ocr
+from fn import append_orc_msg, convert_grayscale, get_img_size, get_ocr_locations, get_rois, gov_ocr, scb_ocr
 from linebot.models import MessageEvent, TextMessage, ImageMessage, TextSendMessage
 
 
@@ -85,26 +85,19 @@ def message_text(event):
         line_bot_api.reply_message(event.reply_token, msg)
     else:
         # load image for ocr
-        img_size = get_img_size(bank_class)
         img = cv2.imread(IMG_FILE_NAME)
         [width, height, _] = img.shape
-        rdtfta = ["ref", "date", "time", "from", "to", "amount"]
         
         if bank_class == "GOV":
             rois = get_rois(img, 10)
             ocr = gov_ocr(rois)
-            for i in range(len(rdtfta)):
-                messages.append("{}: {}".format(rdtfta[i], ocr[i]))
+            msg = append_orc_msg(msg, ocr)
         
         elif bank_class == "SCB":
-            # grayscale
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            thr_img = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-
-            rois = get_rois(thr_img, 12)
+            thr_img = convert_grayscale(img)
+            rois = get_rois(thr_img, 12, 0.1, 0.04)
             ocr = scb_ocr(rois)
-            for i in range(len(rdtfta)):
-                messages.append("{}: {}".format(rdtfta[i], ocr[i]))
+            msg = append_orc_msg(msg, ocr)
 
         else:
             # get locations for ocr
