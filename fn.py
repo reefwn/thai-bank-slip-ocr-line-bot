@@ -588,3 +588,5 @@ def kbank_ocr(rois):
                             amount = t
                         else:
                             amount = t if to_float(t) > to_float(amount) else amount
+
+    return [ref, date, time, from_, to, amount]
