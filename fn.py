@@ -143,7 +143,7 @@ def gov_ocr(rois):
             else:
                 from_ = t[0].strip()
         # to
-        if i == 22 or i == 24:
+        if i in [22, 24]:
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             if to == "" and not has_special_char(txt):
                 if len(txt.split(" ")) > 2:
@@ -171,9 +171,9 @@ def scb_ocr(rois):
 
     for i in range(len(rois)):
     # ref
-        if i == 10 or i == 12 or i == 13:
+        if i in [10, 12, 13]:
             if ref == "":
-                txt = pytesseract.image_to_string(rois[i], lang="eng")
+                txt = pytesseract.image_to_string(rois[i], lang=ENG)
                 if has_special_char(txt):
                     refs = txt.split(" ")
                     for r in refs:
@@ -191,7 +191,7 @@ def scb_ocr(rois):
             date = datetime[0].strip()
             time = datetime[1].strip()
         # from
-        if i == 13 or i == 14 or i == 15:
+        if i in [13, 14, 15]:
             if from_ == "":
                 txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if not has_special_char(txt) and not has_int(txt):
@@ -201,7 +201,7 @@ def scb_ocr(rois):
                     else:
                         from_ = t[0].strip()
         # to
-        if i == 20 or i == 22 or i == 25:
+        if i in [20, 22, 25, 26]:
             if to == "":
                 txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if not has_special_char(txt):
