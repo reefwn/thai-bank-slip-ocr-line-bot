@@ -3,7 +3,7 @@ import pytesseract
 
 from pytesseract import Output
 from collections import namedtuple
-from utils import has_empty_space, has_int, has_special_char, is_num, remove_duplicate_preserve_order
+from utils import has_empty_space, has_int, has_special_char, is_num, remove_duplicate_preserve_order, to_float
 
 THA="tha"
 ENG="eng"
@@ -207,7 +207,7 @@ def gov_ocr(rois):
                         if amount == "":
                             amount = t
                         else:
-                            amount == t if float(amount) > float(t) else amount
+                            amount = t if to_float(t) > to_float(amount) else amount
 
     return [ref, date, time, from_, to, amount]
 
@@ -333,6 +333,6 @@ def ocr_tmb(rois):
                         if amount == "":
                             amount = t
                         else:
-                            amount == t if float(amount.replace(",", "")) > float(t) else amount
+                            amount = t if to_float(t) > to_float(amount) else amount
 
     return [ref, date, time, from_, to, amount]

@@ -89,18 +89,17 @@ def message_text(event):
         thr_img = convert_grayscale(img)
 
         if bank_class == "SCB":
-            thr_img = convert_grayscale(img)
             rois = get_rois(thr_img, 12, 0.1, 0.04)
             ocr = scb_ocr(rois)
             messages = append_orc_msg(messages, ocr)
 
         elif bank_class == "GOV":
-            rois = get_rois(img, 10, 0.06, 0.04)
+            rois = get_rois(thr_img, 10, 0.06, 0.04)
             ocr = gov_ocr(rois)
             messages = append_orc_msg(messages, ocr)
 
         elif bank_class == "TMB":
-            rois = get_rois(img, 12, 0.1, 0.05)
+            rois = get_rois(thr_img, 12, 0.1, 0.05)
             ocr = gov_ocr(rois)
             messages = append_orc_msg(messages, ocr)
 

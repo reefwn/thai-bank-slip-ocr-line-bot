@@ -33,3 +33,7 @@ def remove_duplicate_preserve_order(l):
 
 def has_empty_space(string):
   return len(string.split()) > 0
+
+
+def to_float(string):
+    return float(string.replace(",", ""))
