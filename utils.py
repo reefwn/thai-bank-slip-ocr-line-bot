@@ -1,6 +1,6 @@
 import re
 
-SPECIAL_CHARACTERS = "!#$%^&*?_=,<>/|"
+SPECIAL_CHARACTERS = "!#$%^&*?=,<>/|"
 
 
 def has_special_char(string):

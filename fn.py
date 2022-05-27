@@ -465,3 +465,65 @@ def bbl_ocr(rois):
                             amount = t if to_float(t) > to_float(amount) else amount
 
     return [ref, date, time, from_, to, amount]
+
+
+def bay_ocr(rois):
+    ref = ""
+    date = ""
+    time = ""
+    from_ = ""
+    to = ""
+    amount = ""
+
+    for i in range(len(rois)):
+        # ref
+        if i in [0] or i == len(rois) - 1:
+            if ref == "":
+                txt = pytesseract.image_to_string(rois[i], lang="eng")
+                txt = txt.strip()
+                if "BAY" in txt and has_int(txt):
+                    ref = txt
+        # date time
+        if i in [1]:
+            if date == "" and time == "":
+                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                datetimes = txt.strip().split("\n")[-1]
+                datetime = datetimes.split()
+                date = " ".join(datetime[:3]).strip()
+                time = " ".join(datetime[3:]).strip()
+                if len(date) > 15 or len(time) > 15:
+                    date = ""
+                    time = ""
+        # from
+        if i in [2, 3]:
+            if from_ == "":
+                txt = pytesseract.image_to_string(rois[i], lang="eng")
+                if "\n" in txt:
+                    txt = txt.split("\n")[0]
+                if not has_special_char(txt) and not has_int(txt):
+                    t = txt.split(" ")
+                    if (len(t) >= 2):
+                        from_ = " ".join(t[-2:]).strip()
+                    else:
+                        from_ = t[0].strip()
+        # to
+        if i in [4, 5]:
+            if to == "":
+                txt = pytesseract.image_to_string(rois[i], lang="eng")
+                if "\n" in txt:
+                    txt = txt.split("\n")[0]
+                if not has_special_char(txt):
+                    to = txt.strip()
+        # amount
+        if i == len(rois) - 2 or i == len(rois) - 4:
+            txt = pytesseract.image_to_string(rois[i], lang="eng")
+            if has_empty_space(txt):
+                txt = txt.split()
+                for t in txt:
+                    if is_num(t):
+                        if amount == "":
+                            amount = t
+                        else:
+                            amount = t if to_float(t) > to_float(amount) else amount
+
+    return [ref, date, time, from_, to, amount]

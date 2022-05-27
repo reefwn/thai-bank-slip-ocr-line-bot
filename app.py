@@ -10,7 +10,7 @@ from PIL import Image
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from fastapi import FastAPI, Request, Header, HTTPException
-from fn import append_orc_msg, bbl_ocr, convert_grayscale, get_img_size, get_ocr_locations, get_rois, gov_ocr, ktb_ocr, scb_ocr, tmb_ocr
+from fn import append_orc_msg, bay_ocr, bbl_ocr, convert_grayscale, get_img_size, get_ocr_locations, get_rois, gov_ocr, ktb_ocr, scb_ocr, tmb_ocr
 from linebot.models import MessageEvent, TextMessage, ImageMessage, TextSendMessage
 
 
@@ -81,8 +81,7 @@ def message_text(event):
     messages.append("-" * 10)
 
     if bank_class == "OTHER":
-        msg = TextSendMessage(text="กรุณาอัพโหลดรูปสลิป")
-        line_bot_api.reply_message(event.reply_token, msg)
+        messages.append("กรุณาอัพโหลดรูปสลิป")
     else:
         # load image for ocr
         img = cv2.imread(IMG_FILE_NAME)
@@ -113,6 +112,11 @@ def message_text(event):
             ocr = bbl_ocr(rois)
             messages = append_orc_msg(messages, ocr)
 
+        elif bank_class == "BAY":
+            rois = get_rois(thr_img, 13, 0.2, 0.1)
+            ocr = bay_ocr(rois)
+            messages = append_orc_msg(messages, ocr)
+
         else:
             # get locations for ocr
             ocr_locations = get_ocr_locations(bank_class)
@@ -131,9 +135,9 @@ def message_text(event):
             except:
                 print("something went wrong on ocr")
 
-        combine_msgs = "\n".join(messages)
-        msg = TextSendMessage(text=combine_msgs)
-        line_bot_api.reply_message(event.reply_token, msg)
+    combine_msgs = "\n".join(messages)
+    msg = TextSendMessage(text=combine_msgs)
+    line_bot_api.reply_message(event.reply_token, msg)
 
 
 if __name__ == "__main__":
