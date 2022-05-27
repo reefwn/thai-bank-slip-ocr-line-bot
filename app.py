@@ -91,7 +91,7 @@ def message_text(event):
         rdtfta = ["ref", "date", "time", "from", "to", "amount"]
         
         if bank_class == "GOV":
-            rois = get_rois(img)
+            rois = get_rois(img, 10)
             ocr = gov_ocr(rois)
             for i in range(len(rdtfta)):
                 messages.append("{}: {}".format(rdtfta[i], ocr[i]))
@@ -101,7 +101,7 @@ def message_text(event):
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             thr_img = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
-            rois = get_rois(thr_img)
+            rois = get_rois(thr_img, 12)
             ocr = scb_ocr(rois)
             for i in range(len(rdtfta)):
                 messages.append("{}: {}".format(rdtfta[i], ocr[i]))

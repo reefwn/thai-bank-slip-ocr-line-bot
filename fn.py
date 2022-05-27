@@ -1,10 +1,10 @@
 import pytesseract
-import re
 
 from collections import namedtuple
 from pytesseract import Output
 
-SPECIAL_CHARACTERS = "!#$%^&*()-?_=,<>/|"
+from utils import has_int, has_special_char, is_num
+
 THA="tha"
 ENG="eng"
 THA_ENG="tha+eng"
@@ -88,15 +88,13 @@ def get_ocr_locations(bank):
     return locations[bank]
 
 
-def get_rois(img):
+def get_rois(img, p):
     d = pytesseract.image_to_data(img, output_type=Output.DICT)
     n_boxes = len(d["level"])
 
     duplicates = []
     count = 0
     rois = []
-
-    p = 10
 
     for i in range(n_boxes):
         (x, y, w, h) = (d["left"][i], d["top"][i], d["width"][i], d["height"][i])
@@ -122,10 +120,10 @@ def gov_ocr(rois):
         # ref
         if i == 6:
             txt = pytesseract.image_to_string(rois[i], lang=ENG)
-            if any(c in SPECIAL_CHARACTERS for c in txt):
+            if has_special_char(txt):
                 refs = txt.split(" ")
                 for r in refs:
-                    if not any(c in SPECIAL_CHARACTERS for c in r):
+                    if not has_special_char(r):
                         ref = r.strip()
             else:
                 ref = txt.strip()
@@ -147,7 +145,7 @@ def gov_ocr(rois):
         # to
         if i == 22 or i == 24:
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-            if to == "" and not any(c in SPECIAL_CHARACTERS for c in txt):
+            if to == "" and not has_special_char(txt):
                 if len(txt.split(" ")) > 2:
                     names = txt.split(" ")
                     to = " ".join(names[-2:])
@@ -156,8 +154,8 @@ def gov_ocr(rois):
         # amount
         if i == len(rois) - 2 or i == len(rois) - 1:
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-            txt_int = re.findall(r'[0-9]+', txt)
-            if len(txt_int) > 0:
+            isnum = is_num(txt)
+            if isnum:
                 amount = txt if amount == "" else amount
 
     return [ref, date, time, from_, to, amount]
@@ -176,10 +174,10 @@ def scb_ocr(rois):
         if i == 10 or i == 12 or i == 13:
             if ref == "":
                 txt = pytesseract.image_to_string(rois[i], lang="eng")
-                if any(c in SPECIAL_CHARACTERS for c in txt):
+                if has_special_char(txt):
                     refs = txt.split(" ")
                     for r in refs:
-                        if not any(c in SPECIAL_CHARACTERS for c in r):
+                        if not has_special_char(r):
                             ref = r.strip().replace(" ", "")
                 elif ":" in txt:
                     idx = txt.index(":")
@@ -196,7 +194,7 @@ def scb_ocr(rois):
         if i == 13 or i == 14 or i == 15:
             if from_ == "":
                 txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-                if not any(c in SPECIAL_CHARACTERS for c in txt):
+                if not has_special_char(txt) and not has_int(txt):
                     t = txt.split(" ")
                     if (len(t) >= 2):
                         from_ = " ".join(t[-2:]).strip()
@@ -206,7 +204,7 @@ def scb_ocr(rois):
         if i == 20 or i == 22 or i == 25:
             if to == "":
                 txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-                if not any(c in SPECIAL_CHARACTERS for c in txt):
+                if not has_special_char(txt):
                     if len(txt.split(" ")) > 2:
                         names = txt.split(" ")
                         if "@" in names:
@@ -219,8 +217,8 @@ def scb_ocr(rois):
         # amount
         if i == len(rois) - 5:
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-            txt_int = re.findall(r'[0-9]+', txt)
-            if len(txt_int) > 0:
+            isnum = is_num(txt)
+            if isnum:
                 amount = txt if amount == "" else amount
 
     return [ref, date, time, from_, to, amount]
