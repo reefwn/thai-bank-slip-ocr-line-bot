@@ -273,3 +273,66 @@ def scb_ocr(rois):
                     amount = txt
 
     return [ref, date, time, from_, to, amount]
+
+
+def ocr_tmb(rois):
+    ref = ""
+    date = ""
+    time = ""
+    from_ = ""
+    to = ""
+    amount = ""
+
+    for i in range(len(rois)):
+        # ref
+        if i in [14, 15, 16]:
+            if ref == "":
+                txt = pytesseract.image_to_string(rois[i], lang="eng")
+                if has_empty_space(txt) and "/" not in txt:
+                    refs = txt.split()
+                    if has_special_char(txt):
+                        for r in refs:
+                            if not has_special_char(r):
+                                ref = r.strip()
+                    elif has_int(txt):
+                        ref = refs[-1].strip()
+        # date time
+        if i in [13]:
+            if date == "" and time == "":
+                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                datetime = txt.strip().split()
+                date = datetime[-2]
+                time = datetime[-1]
+        # from
+        if i in [6, 7]:
+            if from_ == "":
+                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                if not has_special_char(txt) and not has_int(txt):
+                    t = txt.split(" ")
+                    if (len(t) >= 2):
+                        from_ = " ".join(t[-2:]).strip()
+                    else:
+                        from_ = t[0].strip()
+        # to
+        if i in [9, 10, 11]:
+            if to == "":
+                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                if not has_special_char(txt) and "-" not in txt:
+                    if has_empty_space(txt.strip()):
+                        names = txt.split(" ")
+                        to = " ".join(names[-2:]).strip()
+                    else:
+                        to = txt.strip()
+        # amount
+        if i in [1]:
+            txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+            if has_empty_space(txt):
+                txt = txt.split()
+                for t in txt:
+                    if is_num(t):
+                        if amount == "":
+                            amount = t
+                        else:
+                            amount == t if float(amount.replace(",", "")) > float(t) else amount
+
+    return [ref, date, time, from_, to, amount]
