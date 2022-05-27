@@ -2,7 +2,7 @@ import os
 import cv2
 import pickle
 import uvicorn
-import pytesseract
+# import pytesseract
 import numpy as np
 import tensorflow as tf
 
@@ -10,7 +10,7 @@ from PIL import Image
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from fastapi import FastAPI, Request, Header, HTTPException
-from fn import append_orc_msg, bay_ocr, bbl_ocr, convert_grayscale, get_img_size, get_ocr_locations, get_rois, gov_ocr, ktb_ocr, scb_ocr, tmb_ocr
+from fn import append_orc_msg, bay_ocr, bbl_ocr, convert_grayscale, get_img_size, get_ocr_locations, get_rois, gov_ocr, kbank_ocr, ktb_ocr, scb_ocr, tmb_ocr
 from linebot.models import MessageEvent, TextMessage, ImageMessage, TextSendMessage
 
 
@@ -117,23 +117,28 @@ def message_text(event):
             ocr = bay_ocr(rois)
             messages = append_orc_msg(messages, ocr)
 
-        else:
-            # get locations for ocr
-            ocr_locations = get_ocr_locations(bank_class)
+        elif bank_class == "KBANK":
+            rois = get_rois(thr_img, 13, 0.2, 0.1)
+            ocr = kbank_ocr(rois)
+            messages = append_orc_msg(messages, ocr)
 
-            # ocr on each box
-            try:
-                for i in range(len(ocr_locations)):
-                    (x, y, w, h) = ocr_locations[i].bbox
+        # else:
+        #     # get locations for ocr
+        #     ocr_locations = get_ocr_locations(bank_class)
 
-                    roi = img[y:y+h, x:x+w]
+        #     # ocr on each box
+        #     try:
+        #         for i in range(len(ocr_locations)):
+        #             (x, y, w, h) = ocr_locations[i].bbox
 
-                    lang = "eng" if i == len(ocr_locations) - 1 else "tha+eng"
-                    text = pytesseract.image_to_string(roi, lang=lang)
+        #             roi = img[y:y+h, x:x+w]
 
-                    messages.append("{}: {}".format(str(ocr_locations[i].id), text.strip()))
-            except:
-                print("something went wrong on ocr")
+        #             lang = "eng" if i == len(ocr_locations) - 1 else "tha+eng"
+        #             text = pytesseract.image_to_string(roi, lang=lang)
+
+        #             messages.append("{}: {}".format(str(ocr_locations[i].id), text.strip()))
+        #     except:
+        #         print("something went wrong on ocr")
 
     combine_msgs = "\n".join(messages)
     msg = TextSendMessage(text=combine_msgs)
