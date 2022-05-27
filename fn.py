@@ -6,8 +6,8 @@ from collections import namedtuple
 from utils import has_empty_space, has_int, has_special_char, is_num, remove_duplicate_preserve_order, to_float
 
 THA="tha"
-ENG="eng"
-THA_ENG="tha+eng"
+ENG=ENG
+THA_ENG=THA_ENG
 RDTFTA = ["ref", "date", "time", "from", "to", "amount"]
 
 
@@ -158,7 +158,7 @@ def gov_ocr(rois):
         # ref
         if i in [1, 2]:
             if ref == "":
-                txt = pytesseract.image_to_string(rois[i], lang="eng")
+                txt = pytesseract.image_to_string(rois[i], lang=ENG)
                 if has_empty_space(txt):
                     refs = txt.split()
                     if has_special_char(txt):
@@ -170,7 +170,7 @@ def gov_ocr(rois):
         # date time
         if i in [2, 3, 4]:
             if date == "" and time == "":
-                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 datetime = txt.split(" ")
                 date = " ".join(datetime[:3]).strip()
                 time = " ".join(datetime[3:]).strip()
@@ -180,7 +180,7 @@ def gov_ocr(rois):
         # from
         if i in [4, 5]:
             if from_ == "":
-                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if not has_special_char(txt) and not has_int(txt):
                     t = txt.split(" ")
                     if (len(t) >= 2):
@@ -190,7 +190,7 @@ def gov_ocr(rois):
         # to
         if i in [7, 8, 9]:
             if to == "":
-                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if not has_special_char(txt):
                     if has_empty_space(txt.strip()):
                         names = txt.split(" ")
@@ -199,7 +199,7 @@ def gov_ocr(rois):
                         to = txt.strip()
         # amount
         if i == len(rois) - 2 or i == len(rois) - 1:
-            txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             if has_empty_space(txt):
                 txt = txt.split()
                 for t in txt:
@@ -287,7 +287,7 @@ def tmb_ocr(rois):
         # ref
         if i in [14, 15, 16]:
             if ref == "":
-                txt = pytesseract.image_to_string(rois[i], lang="eng")
+                txt = pytesseract.image_to_string(rois[i], lang=ENG)
                 if has_empty_space(txt) and "/" not in txt:
                     refs = txt.split()
                     if has_special_char(txt):
@@ -299,14 +299,14 @@ def tmb_ocr(rois):
         # date time
         if i in [13]:
             if date == "" and time == "":
-                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 datetime = txt.strip().split()
                 date = datetime[-2]
                 time = datetime[-1]
         # from
         if i in [6, 7]:
             if from_ == "":
-                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if not has_special_char(txt) and not has_int(txt):
                     t = txt.split(" ")
                     if (len(t) >= 2):
@@ -316,7 +316,7 @@ def tmb_ocr(rois):
         # to
         if i in [9, 10, 11]:
             if to == "":
-                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if not has_special_char(txt) and "-" not in txt:
                     if has_empty_space(txt.strip()):
                         names = txt.split(" ")
@@ -325,7 +325,7 @@ def tmb_ocr(rois):
                         to = txt.strip()
         # amount
         if i in [1]:
-            txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             if has_empty_space(txt):
                 txt = txt.split()
                 for t in txt:
@@ -350,7 +350,7 @@ def ktb_ocr(rois):
         # ref
         if i in [1]:
             if ref == "":
-                txt = pytesseract.image_to_string(rois[i], lang="eng")
+                txt = pytesseract.image_to_string(rois[i], lang=ENG)
                 if has_empty_space(txt) and "/" not in txt:
                     refs = txt.split()
                     if has_special_char(txt):
@@ -362,7 +362,7 @@ def ktb_ocr(rois):
         # date time
         if i == len(rois) - 1 or i == len(rois) - 2 or i == len(rois) - 3:
             if date == "" and time == "":
-                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if "-" in txt:
                     datetime = txt.strip().split("-")
                     dates = datetime[0].split()
@@ -371,7 +371,7 @@ def ktb_ocr(rois):
         # from
         if i in [2]:
             if from_ == "":
-                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if not has_special_char(txt) and not has_int(txt):
                     t = txt.split(" ")
                     if (len(t) >= 2):
@@ -381,7 +381,7 @@ def ktb_ocr(rois):
         # to
         if i in [3, 4, 5]:
             if to == "":
-                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if not has_special_char(txt) and "-" not in txt:
                     if has_empty_space(txt.strip()):
                         names = txt.split(" ")
@@ -390,6 +390,70 @@ def ktb_ocr(rois):
                         to = txt.strip()
         # amount
         if i in [6, 7]:
+            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
+            if has_empty_space(txt):
+                txt = txt.split()
+                for t in txt:
+                    if is_num(t):
+                        if amount == "":
+                            amount = t
+                        else:
+                            amount = t if to_float(t) > to_float(amount) else amount
+
+    return [ref, date, time, from_, to, amount]
+
+
+def bbl_ocr(rois):
+    ref = ""
+    date = ""
+    time = ""
+    from_ = ""
+    to = ""
+    amount = ""
+
+    for i in range(len(rois)):
+        # ref
+        if i == len(rois) - 2 or i == len(rois) - 4:
+            if ref == "":
+                txt = pytesseract.image_to_string(rois[i], lang="eng")
+                if has_empty_space(txt):
+                    refs = txt.split()
+                    if has_special_char(txt):
+                        for r in refs:
+                            if not has_special_char(r) and is_num(r):
+                                ref = r.strip()
+        # date time
+        if i in [2]:
+            if date == "" and time == "":
+                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                if "," in txt:
+                    datetime = txt.strip().split(",")
+                    date = datetime[0].strip()
+                    time = datetime[1].strip()
+        # from
+        if i in [4]:
+            if from_ == "":
+                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                txt = txt.split("\n\n")[0]
+                if not has_special_char(txt) and not has_int(txt):
+                    t = txt.split(" ")
+                    if (len(t) >= 2):
+                        from_ = " ".join(t[-2:]).strip()
+                    else:
+                        from_ = t[0].strip()
+        # to
+        if i in [7]:
+            if to == "":
+                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                txt = txt.split("\n\n")[0]
+                if not has_special_char(txt) and "-" not in txt:
+                    if has_empty_space(txt.strip()):
+                        names = txt.split(" ")
+                        to = " ".join(names[-2:]).strip()
+                    else:
+                        to = txt.strip()
+        # amount
+        if i in [3]:
             txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
             if has_empty_space(txt):
                 txt = txt.split()
