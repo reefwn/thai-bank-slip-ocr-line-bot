@@ -6,8 +6,8 @@ from collections import namedtuple
 from utils import has_empty_space, has_int, has_special_char, is_num, remove_duplicate_preserve_order, to_float
 
 THA="tha"
-ENG=ENG
-THA_ENG=THA_ENG
+ENG="eng"
+THA_ENG="tha+eng"
 RDTFTA = ["ref", "date", "time", "from", "to", "amount"]
 
 
