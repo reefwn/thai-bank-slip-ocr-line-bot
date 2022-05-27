@@ -156,45 +156,58 @@ def gov_ocr(rois):
 
     for i in range(len(rois)):
         # ref
-        if i == 6:
-            txt = pytesseract.image_to_string(rois[i], lang=ENG)
-            if has_special_char(txt):
-                refs = txt.split(" ")
-                for r in refs:
-                    if not has_special_char(r):
-                        ref = r.strip()
-            else:
-                ref = txt.strip()
+        if i in [1, 2]:
+            if ref == "":
+                txt = pytesseract.image_to_string(rois[i], lang="eng")
+                if has_empty_space(txt):
+                    refs = txt.split()
+                    if has_special_char(txt):
+                        for r in refs:
+                            if not has_special_char(r):
+                                ref = r.strip()
+                    elif has_int(txt):
+                        ref = refs[-1].strip()
         # date time
-        if i == 7:
-            text = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-            datetime = text.split(" ")
-            date = " ".join(datetime[:3]).strip()
-            time = " ".join(datetime[3:]).strip()
+        if i in [2, 3, 4]:
+            if date == "" and time == "":
+                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                datetime = txt.split(" ")
+                date = " ".join(datetime[:3]).strip()
+                time = " ".join(datetime[3:]).strip()
+                if len(date) > 15 or len(time) > 15:
+                    date = ""
+                    time = ""
         # from
-        if i == 14:
-            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-            t = txt.split("\n")
-            if len(t[0].split(" ")) > 2:
-                names = t[0].split(" ")
-                from_ = " ".join(names[-2:])
-            else:
-                from_ = t[0].strip()
+        if i in [4, 5]:
+            if from_ == "":
+                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                if not has_special_char(txt) and not has_int(txt):
+                    t = txt.split(" ")
+                    if (len(t) >= 2):
+                        from_ = " ".join(t[-2:]).strip()
+                    else:
+                        from_ = t[0].strip()
         # to
-        if i in [22, 24]:
-            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-            if to == "" and not has_special_char(txt):
-                if len(txt.split(" ")) > 2:
-                    names = txt.split(" ")
-                    to = " ".join(names[-2:])
-                else:
-                    to = txt.strip()
+        if i in [7, 8, 9]:
+            if to == "":
+                txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+                if not has_special_char(txt):
+                    if has_empty_space(txt.strip()):
+                        names = txt.split(" ")
+                        to = " ".join(names[-2:]).strip()
+                    else:
+                        to = txt.strip()
         # amount
         if i == len(rois) - 2 or i == len(rois) - 1:
-            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-            isnum = is_num(txt)
-            if isnum:
-                amount = txt if amount == "" else amount
+            txt = pytesseract.image_to_string(rois[i], lang="tha+eng")
+            if has_empty_space(txt):
+                txt = txt.split()
+                for t in txt:
+                    if is_num(t):
+                        if amount == "":
+                            amount = t
+                        else:
+                            amount == t if float(amount) > float(t) else amount
 
     return [ref, date, time, from_, to, amount]
 
@@ -229,7 +242,7 @@ def scb_ocr(rois):
             date = datetime[0].strip()
             time = datetime[1].strip()
         # from
-        if i in [4, 5]:
+        if i in [4, 5, 6]:
             if from_ == "":
                 txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
                 if not has_special_char(txt) and not has_int(txt):
@@ -239,7 +252,7 @@ def scb_ocr(rois):
                     else:
                         from_ = t[0].strip()
         # to
-        if i in [7, 8]:
+        if i in [7, 8, 9]:
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             if not has_special_char(txt) and not has_int(txt):
                 if len(txt.split(" ")) > 2:
@@ -256,8 +269,7 @@ def scb_ocr(rois):
             txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
             if has_empty_space(txt):
                 txt = txt.split()[-1]
-                isnum = is_num(txt)
-                if isnum:
+                if is_num(txt):
                     amount = txt
 
     return [ref, date, time, from_, to, amount]
