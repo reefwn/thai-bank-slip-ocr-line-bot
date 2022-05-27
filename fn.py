@@ -224,8 +224,8 @@ def scb_ocr(rois):
                     ref = txt.strip().replace(" ", "")
         # date time
         if i == 2:
-            text = pytesseract.image_to_string(rois[i], lang=THA_ENG)
-            datetime = text.split("-")
+            txt = pytesseract.image_to_string(rois[i], lang=THA_ENG)
+            datetime = txt.split("-")
             date = datetime[0].strip()
             time = datetime[1].strip()
         # from

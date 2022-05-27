@@ -91,13 +91,13 @@ def message_text(event):
         if bank_class == "GOV":
             rois = get_rois(img, 10)
             ocr = gov_ocr(rois)
-            msg = append_orc_msg(msg, ocr)
+            messages = append_orc_msg(msg, ocr)
         
         elif bank_class == "SCB":
             thr_img = convert_grayscale(img)
             rois = get_rois(thr_img, 12, 0.1, 0.04)
             ocr = scb_ocr(rois)
-            msg = append_orc_msg(msg, ocr)
+            messages = append_orc_msg(msg, ocr)
 
         else:
             # get locations for ocr
